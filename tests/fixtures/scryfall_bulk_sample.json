@@ -1,0 +1,43 @@
+[
+  {
+    "oracle_id": "oracle-drown",
+    "name": "Drown in Sorrow",
+    "released_at": "2014-02-07",
+    "set": "bng",
+    "games": ["paper"],
+    "digital": false,
+    "lang": "en",
+    "set_type": "expansion"
+  },
+  {
+    "oracle_id": "oracle-drown",
+    "name": "Drown in Sorrow",
+    "printed_name": "悲哀まみれ",
+    "released_at": "2023-08-04",
+    "set": "cmm",
+    "games": ["paper"],
+    "digital": false,
+    "lang": "ja",
+    "set_type": "commander"
+  },
+  {
+    "oracle_id": "oracle-lotus",
+    "name": "Black Lotus",
+    "released_at": "1993-08-05",
+    "set": "lea",
+    "games": ["paper"],
+    "digital": false,
+    "lang": "en",
+    "set_type": "core"
+  },
+  {
+    "oracle_id": "oracle-token",
+    "name": "Treasure Token",
+    "released_at": "2024-04-19",
+    "set": "otj",
+    "games": ["paper"],
+    "digital": false,
+    "lang": "en",
+    "set_type": "token"
+  }
+]

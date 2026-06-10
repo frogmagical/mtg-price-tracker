@@ -137,6 +137,7 @@ def post_card(body: dict):
         "fetch_status": "pending",
         "fetch_error_count": 0,
         "registered_at": now,
+        "last_fetched_at": "1970-01-01T00:00:00+00:00",
     }
     dynamodb.Table(CARDS_TABLE).put_item(Item=item)
     return _resp(201, {"card": item})
