@@ -25,6 +25,11 @@ resource "aws_dynamodb_table" "cards" {
     projection_type = "ALL"
   }
 
+  ttl {
+    attribute_name = "TTL"
+    enabled        = false
+  }
+
   tags = {
     Project = var.project_name
   }
@@ -60,6 +65,7 @@ resource "aws_sqs_queue" "fetch_dlq" {
   name                        = "mtg-fetch-dlq.fifo"
   fifo_queue                  = true
   content_based_deduplication = true
+  message_retention_seconds   = 1209600 # 14 days (max)
 
   tags = {
     Project = var.project_name
