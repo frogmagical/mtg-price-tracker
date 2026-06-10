@@ -1,23 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { fetchCards, fetchScryfallSet, scryfallCardImageUrl, type CardMeta, type ScryfallSet } from '../api'
+import { scryfallCardImageUrl } from '../api'
+import { useCardStore } from '../hooks/useCardStore'
 
 export default function CardListPage() {
   const { setCode } = useParams<{ setCode: string }>()
-  const [cards, setCards] = useState<CardMeta[]>([])
-  const [setInfo, setSetInfo] = useState<ScryfallSet | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { cards, setInfoMap, loading } = useCardStore()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (!setCode) return
-    Promise.all([fetchCards(), fetchScryfallSet(setCode)])
-      .then(([allCards, info]) => {
-        setCards(allCards.filter((c) => c.latest_set_code === setCode))
-        setSetInfo(info)
-      })
-      .finally(() => setLoading(false))
-  }, [setCode])
+  const setInfo = setInfoMap[setCode ?? ''] ?? null
+  const filteredCards = useMemo(
+    () => cards.filter((c) => c.latest_set_code === setCode),
+    [cards, setCode],
+  )
 
   return (
     <div className="min-h-screen bg-mtg-bg text-mtg-text">
@@ -42,7 +37,7 @@ export default function CardListPage() {
             <p className="text-xs text-mtg-muted">
               {setInfo?.released_at?.slice(0, 4)}
               {setInfo?.released_at ? ' · ' : ''}
-              {cards.length}枚登録
+              {filteredCards.length}枚登録
             </p>
           </div>
         </div>
@@ -51,11 +46,11 @@ export default function CardListPage() {
       <div className="max-w-5xl mx-auto px-4 py-6">
         {loading ? (
           <div className="flex items-center justify-center h-48 text-mtg-muted">読み込み中...</div>
-        ) : cards.length === 0 ? (
+        ) : filteredCards.length === 0 ? (
           <p className="text-mtg-muted text-center py-16">このエキスパンションにカードが登録されていません。</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {cards.map((card) => (
+            {filteredCards.map((card) => (
               <button
                 key={card.card_name_en}
                 onClick={() =>

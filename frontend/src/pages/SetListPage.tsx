@@ -1,6 +1,7 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchCards, fetchScryfallSet, type CardMeta, type ScryfallSet } from '../api'
+import type { CardMeta, ScryfallSet } from '../api'
+import { useCardStore } from '../hooks/useCardStore'
 
 type SearchMode = 'card' | 'set'
 
@@ -13,29 +14,13 @@ type SetGroup = {
 const MAX_SUGGESTIONS = 10
 
 export default function SetListPage() {
-  const [cards, setCards] = useState<CardMeta[]>([])
-  const [setInfoMap, setSetInfoMap] = useState<Record<string, ScryfallSet | null>>({})
-  const [loading, setLoading] = useState(true)
+  const { cards, setInfoMap, loading } = useCardStore()
   const [query, setQuery] = useState('')
   const [searchMode, setSearchMode] = useState<SearchMode>('card')
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
-  const suggestionsRef = useRef<HTMLUListElement>(null)
   const navigate = useNavigate()
-
-  useEffect(() => {
-    fetchCards()
-      .then(async (allCards) => {
-        setCards(allCards)
-        const codes = [...new Set(allCards.map((c) => c.latest_set_code).filter(Boolean))]
-        const entries = await Promise.all(
-          codes.map(async (code) => [code, await fetchScryfallSet(code)] as const),
-        )
-        setSetInfoMap(Object.fromEntries(entries))
-      })
-      .finally(() => setLoading(false))
-  }, [])
 
   const suggestions = useMemo<CardMeta[]>(() => {
     if (searchMode !== 'card' || query.trim() === '') return []
@@ -104,7 +89,6 @@ export default function SetListPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-6">
-        {/* Search bar */}
         <div className="mb-6">
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <input
@@ -122,12 +106,8 @@ export default function SetListPage() {
               className="w-full bg-mtg-surface border border-mtg-border rounded-lg px-4 py-3 text-mtg-text placeholder:text-mtg-muted focus:outline-none focus:border-mtg-gold"
             />
 
-            {/* Suggestions dropdown */}
             {searchMode === 'card' && showSuggestions && suggestions.length > 0 && (
-              <ul
-                ref={suggestionsRef}
-                className="absolute z-50 w-full mt-1 bg-mtg-surface border border-mtg-border rounded-xl overflow-hidden shadow-xl"
-              >
+              <ul className="absolute z-50 w-full mt-1 bg-mtg-surface border border-mtg-border rounded-xl overflow-hidden shadow-xl">
                 {suggestions.map((card, i) => (
                   <li key={card.card_name_en}>
                     <button
@@ -158,7 +138,6 @@ export default function SetListPage() {
             )}
           </div>
 
-          {/* Radio buttons */}
           <div className="flex gap-5 mt-3">
             {(['card', 'set'] as const).map((mode) => (
               <label key={mode} className="flex items-center gap-2 cursor-pointer select-none">
@@ -178,7 +157,6 @@ export default function SetListPage() {
           </div>
         </div>
 
-        {/* Expansion grid */}
         {loading ? (
           <div className="flex items-center justify-center h-48 text-mtg-muted">読み込み中...</div>
         ) : setGroups.length === 0 ? (
