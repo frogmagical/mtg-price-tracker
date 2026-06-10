@@ -1,5 +1,31 @@
 const BASE_URL = import.meta.env.VITE_API_ENDPOINT ?? ''
 
+export type ScryfallSet = {
+  code: string
+  name: string
+  released_at: string
+  icon_svg_uri: string
+  card_count: number
+}
+
+export async function fetchScryfallSet(code: string): Promise<ScryfallSet | null> {
+  try {
+    const res = await fetch(`https://api.scryfall.com/sets/${code.toLowerCase()}`)
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
+export function scryfallCardImageUrl(
+  cardNameEn: string,
+  version: 'small' | 'normal' | 'art_crop' = 'small',
+): string {
+  const name = cardNameEn.replace(/\+/g, ' ')
+  return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}&format=image&version=${version}`
+}
+
 export type PriceItem = {
   price_id: string
   shop: string

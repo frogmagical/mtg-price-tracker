@@ -16,9 +16,11 @@
     "@capacitor/core": "^6.0.0",
     "@capacitor/ios": "^6.0.0",
     "@capacitor/push-notifications": "^6.0.0",
+    "@tailwindcss/vite": "^4.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.23.1"
+    "react-router-dom": "^6.23.1",
+    "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.0.0",

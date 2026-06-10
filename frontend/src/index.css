@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mtg-bg: #0f0e13;
+  --color-mtg-surface: #1a1927;
+  --color-mtg-surface-2: #232240;
+  --color-mtg-border: #3d3a60;
+  --color-mtg-gold: #c9a227;
+  --color-mtg-gold-light: #e8c245;
+  --color-mtg-text: #f0e6d2;
+  --color-mtg-muted: #8b7e6a;
+}
+
+body {
+  background-color: #0f0e13;
+  color: #f0e6d2;
+}
