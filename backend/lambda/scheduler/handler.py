@@ -1,3 +1,4 @@
+import hashlib
 import os
 import json
 import boto3
@@ -30,13 +31,19 @@ def lambda_handler(event, context):
 
     print(f"Enqueuing {len(cards)} cards")
 
-    for card in cards:
-        card_name_en = card["card_name_en"]
-        sqs.send_message(
-            QueueUrl=QUEUE_URL,
-            MessageBody=json.dumps({"card_name_en": card_name_en}),
-            MessageGroupId="default",
-            MessageDeduplicationId=card_name_en,
-        )
+    enqueued = 0
+    for i in range(0, len(cards), 10):
+        batch = cards[i:i + 10]
+        entries = [
+            {
+                "Id": str(j),
+                "MessageBody": json.dumps({"card_name_en": card["card_name_en"]}),
+                "MessageGroupId": "default",
+                "MessageDeduplicationId": hashlib.sha256(card["card_name_en"].encode()).hexdigest(),
+            }
+            for j, card in enumerate(batch)
+        ]
+        sqs.send_message_batch(QueueUrl=QUEUE_URL, Entries=entries)
+        enqueued += len(batch)
 
-    return {"statusCode": 200, "enqueued": len(cards)}
+    return {"statusCode": 200, "enqueued": enqueued}

@@ -27,7 +27,7 @@ resource "aws_lambda_function" "scheduler" {
   filename         = data.archive_file.scheduler_zip.output_path
   source_code_hash = data.archive_file.scheduler_zip.output_base64sha256
   memory_size      = 128
-  timeout          = 60
+  timeout          = 300
 
   environment {
     variables = {

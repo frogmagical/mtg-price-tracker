@@ -304,6 +304,7 @@ def to_dynamodb_item(
         "fetch_status": "pending",
         "fetch_error_count": 0,
         "registered_at": imported_at,
+        "last_fetched_at": "1970-01-01T00:00:00+00:00",
     }
 
 
@@ -368,8 +369,13 @@ def upsert_items_aws_cli(
     profile: str | None,
     region: str | None,
 ) -> None:
+    # Deduplicate by card_name_en — batch-write-item rejects duplicate keys in one batch.
+    # Multiple oracle_ids can share the same Wisdom Guild card key; keep the last occurrence.
+    seen: dict[str, dict] = {}
+    for item in items:
+        seen[item["card_name_en"]] = item
     pending = [
-        {"PutRequest": {"Item": to_dynamodb_attribute_map(item)}} for item in items
+        {"PutRequest": {"Item": to_dynamodb_attribute_map(item)}} for item in seen.values()
     ]
     written = 0
 
@@ -415,10 +421,12 @@ def run_batch_write(
 
         result = subprocess.run(
             cmd,
-            check=True,
             capture_output=True,
             text=True,
         )
+        if result.returncode != 0:
+            print(f"batch-write-item failed (rc={result.returncode}): {result.stderr[:500]}", file=sys.stderr)
+            result.check_returncode()
     return json.loads(result.stdout or "{}")
 
 
