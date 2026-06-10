@@ -11,7 +11,7 @@ dynamodb = boto3.resource("dynamodb")
 
 CARDS_TABLE = os.environ["DYNAMODB_CARDS_TABLE"]
 PRICES_TABLE = os.environ["DYNAMODB_PRICES_TABLE"]
-BASE_URL = "https://wonder.wisdom-guild.net/price/{}/"
+BASE_URL = "https://wonder.wisdom-guild.net/price/{}/?stock_gt=1"
 
 
 def lambda_handler(event, context):
