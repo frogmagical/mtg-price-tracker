@@ -30,6 +30,7 @@ class CardAggregate:
     card_name_ja: str
     latest_set_code: str
     latest_set_date: date
+    image_uri: str = ""
 
 
 def main() -> int:
@@ -233,6 +234,7 @@ def build_card_master(
         name = to_wisdom_card_key(card["name"])
         set_code = str(card.get("set") or "").upper()
         printed_name = get_japanese_printed_name(card)
+        image_uri = get_image_uri(card)
 
         current = aggregates.get(oracle_id)
         if current is None:
@@ -242,6 +244,7 @@ def build_card_master(
                 card_name_ja=printed_name,
                 latest_set_code=set_code,
                 latest_set_date=released_at,
+                image_uri=image_uri,
             )
             continue
 
@@ -252,6 +255,8 @@ def build_card_master(
             current.latest_set_date = released_at
             current.latest_set_code = set_code
             current.card_name_en = name
+            if image_uri:
+                current.image_uri = image_uri
 
     return aggregates
 
@@ -285,6 +290,19 @@ def get_japanese_printed_name(card: dict[str, Any]) -> str:
     return ""
 
 
+def get_image_uri(card: dict[str, Any]) -> str:
+    # Regular card
+    uris = card.get("image_uris")
+    if uris:
+        return str(uris.get("small") or uris.get("normal") or "")
+    # Double-faced card
+    faces = card.get("card_faces") or []
+    if faces:
+        face_uris = faces[0].get("image_uris") or {}
+        return str(face_uris.get("small") or face_uris.get("normal") or "")
+    return ""
+
+
 def to_wisdom_card_key(name: str) -> str:
     return " ".join(name.strip().split()).replace(" ", "+")
 
@@ -295,7 +313,7 @@ def to_dynamodb_item(
     imported_at: str,
     today: date,
 ) -> dict[str, Any]:
-    return {
+    item: dict[str, Any] = {
         "card_name_en": aggregate.card_name_en,
         "card_name_ja": aggregate.card_name_ja,
         "latest_set_code": aggregate.latest_set_code,
@@ -306,6 +324,9 @@ def to_dynamodb_item(
         "registered_at": imported_at,
         "last_fetched_at": "1970-01-01T00:00:00+00:00",
     }
+    if aggregate.image_uri:
+        item["image_uri"] = aggregate.image_uri
+    return item
 
 
 def get_cache_mode(latest_set_date: date, *, today: date) -> str:

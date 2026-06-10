@@ -29,6 +29,7 @@ PK: card_name_en (String)   例: "Drown+in+Sorrow"
 | `latest_set_date` | S | ✓ | 最新収録セットの発売日 (YYYY-MM-DD) |
 | `cache_mode` | S | ✓ | "scheduled" または "lazy" |
 | `last_fetched_at` | S | | 最終fetch日時 (ISO8601) |
+| `last_viewed_at` | S | | 最終閲覧日時 (ISO8601)。GET /prices 呼び出し時に更新される |
 | `fetch_error_count` | N | | 連続エラー回数 |
 | `fetch_status` | S | | "ok" / "error" / "not_found" / "pending" |
 | `registered_at` | S | ✓ | 登録日時 (ISO8601) |
@@ -39,6 +40,7 @@ PK: card_name_en (String)   例: "Drown+in+Sorrow"
 - PK: `cache_mode`
 - SK: `last_fetched_at`
 - 用途: Schedulerが `cache_mode = "scheduled"` のカードを全件取得するため
+- Scheduler はさらに `last_viewed_at >= (今日 - 30日)` のカードのみ SQS にエンキューする（WCU コスト最適化）
 
 ---
 

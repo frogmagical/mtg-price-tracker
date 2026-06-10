@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { scryfallCardImageUrl } from '../api'
+import { cardImageUrl } from '../api'
 import { useCardStore } from '../hooks/useCardStore'
 
 export default function CardListPage() {
@@ -59,16 +59,22 @@ export default function CardListPage() {
                 className="group rounded-xl overflow-hidden border border-mtg-border hover:border-mtg-gold transition-all duration-200 bg-mtg-surface cursor-pointer text-left"
               >
                 <div className="aspect-[5/7] overflow-hidden bg-mtg-border relative">
-                  <img
-                    src={scryfallCardImageUrl(card.card_name_en, 'small')}
-                    alt={card.card_name_ja || card.card_name_en}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      const el = e.currentTarget
-                      el.style.display = 'none'
-                      el.parentElement!.classList.add('flex', 'items-center', 'justify-center')
-                    }}
-                  />
+                  {cardImageUrl(card) ? (
+                    <img
+                      src={cardImageUrl(card)}
+                      alt={card.card_name_ja || card.card_name_en}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const el = e.currentTarget
+                        el.style.display = 'none'
+                        el.parentElement!.classList.add('flex', 'items-center', 'justify-center')
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-mtg-muted text-xs px-2 text-center">
+                      {card.card_name_en.replace(/\+/g, ' ')}
+                    </div>
+                  )}
                   {card.cache_mode === 'lazy' && (
                     <span className="absolute top-1.5 right-1.5 text-[10px] bg-black/70 text-mtg-muted px-1.5 py-0.5 rounded-full">
                       旧

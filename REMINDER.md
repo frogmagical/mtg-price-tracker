@@ -10,8 +10,12 @@
 - Price fetch was confirmed with `Drown+in+Sorrow`.
 - Frontend price list hides rows where `stock` is missing or `stock <= 0`.
 - Fetcher currently fetches only the first Wisdom Guild price page for each registered card.
-- Dev AWS resources managed by Terraform were destroyed on 2026-06-10 for cost reduction.
+- Dev AWS resources managed by Terraform were destroyed on 2026-06-11 for cost reduction.
 - Remote Terraform state bucket `mkhookah-terraform` is intentionally retained.
+- 33,360 card master records imported via `scripts/import_scryfall_cards.py` (Scryfall bulk data).
+- Japanese names enriched via `scripts/enrich_japanese_names.py` (28,926 mappings from Scryfall search API).
+- Card images stored in S3 (`images/{card_name_en}.jpg`), served via CloudFront. Images were partially downloaded (~500+ of 33,360) before infrastructure was destroyed.
+- `last_viewed_at` field added to `mtg-cards`; Scheduler filters to only enqueue cards viewed within the last 30 days.
 
 ## Important Caveats
 
@@ -246,6 +250,24 @@ aws cloudfront create-invalidation --distribution-id E22MAYUA815TXG --paths '/*'
 API smoke test:
 
 ```bash
-curl https://le9br77mf6.execute-api.ap-northeast-1.amazonaws.com/cards
-curl https://le9br77mf6.execute-api.ap-northeast-1.amazonaws.com/prices/Drown%2Bin%2BSorrow
+curl https://oxstj9q420.execute-api.ap-northeast-1.amazonaws.com/cards
+curl https://oxstj9q420.execute-api.ap-northeast-1.amazonaws.com/prices/Drown%2Bin%2BSorrow
+```
+
+Card image download (resume after re-apply):
+
+```bash
+cd /home/tokium/Git/MyProject/mtg-price-tracker
+nohup python3 scripts/download_images.py \
+  --profile myenv --region ap-northeast-1 --max-requests-per-second 3 \
+  > /tmp/download_images.log 2>&1 &
+```
+
+Japanese name enrichment (resume after re-apply):
+
+```bash
+cd /home/tokium/Git/MyProject/mtg-price-tracker
+nohup python3 scripts/enrich_japanese_names.py \
+  --profile myenv --region ap-northeast-1 \
+  > /tmp/enrich_ja_names.log 2>&1 &
 ```

@@ -23,7 +23,7 @@
 | S3 | `mtg-price-frontend-{account_id}` | 静的ウェブサイトホスティング |
 | CloudFront | `mtg-price-cdn` | S3オリジン, HTTPS強制 |
 | API Gateway | `mtg-price-api` | HTTP API (REST APIより70%安い) |
-| Lambda | `mtg-api` | Python 3.12, 256MB, timeout 10s |
+| Lambda | `mtg-api` | Python 3.12, 256MB, timeout 30s |
 
 ### ストレージ
 
@@ -65,8 +65,8 @@ DELETE /cards/{cardNameEn}
 
 **mtg-api:**
 - `dynamodb:Query` on mtg-prices
-- `dynamodb:GetItem`, `dynamodb:Query` on mtg-cards
-- `lambda:InvokeFunction` on mtg-fetcher (lazyモードの同期呼び出し)
+- `dynamodb:GetItem`, `dynamodb:Query`, `dynamodb:Scan`, `dynamodb:PutItem`, `dynamodb:DeleteItem`, `dynamodb:UpdateItem` on mtg-cards
+- `lambda:InvokeFunction` on mtg-fetcher (lazyモード・陳腐化データの同期呼び出し)
 
 ## デプロイ方法
 

@@ -1,4 +1,12 @@
 const BASE_URL = import.meta.env.VITE_API_ENDPOINT ?? ''
+const CF_DOMAIN = import.meta.env.VITE_CF_DOMAIN ?? ''
+
+export function cardImageUrl(card: { card_name_en: string }): string {
+  if (CF_DOMAIN) {
+    return `https://${CF_DOMAIN}/images/${encodeURIComponent(card.card_name_en)}.jpg`
+  }
+  return ''
+}
 
 export type ScryfallSet = {
   code: string

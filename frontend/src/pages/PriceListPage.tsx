@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { fetchPrices, scryfallCardImageUrl, type PriceItem, type CardMeta } from '../api'
+import { fetchPrices, cardImageUrl, type PriceItem, type CardMeta } from '../api'
 
 export default function PriceListPage() {
   const { cardNameEn } = useParams<{ cardNameEn: string }>()
@@ -32,12 +32,14 @@ export default function PriceListPage() {
     <div className="min-h-screen bg-mtg-bg text-mtg-text">
       {/* Art crop banner */}
       <div className="relative h-48 overflow-hidden bg-mtg-surface">
-        <img
-          src={scryfallCardImageUrl(cardNameEn ?? '', 'art_crop')}
-          alt=""
-          className="w-full h-full object-cover opacity-50"
-          onError={(e) => { e.currentTarget.style.display = 'none' }}
-        />
+        {cardMeta && cardImageUrl(cardMeta) && (
+          <img
+            src={cardImageUrl(cardMeta)}
+            alt=""
+            className="w-full h-full object-cover opacity-50"
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-mtg-bg via-mtg-bg/60 to-transparent" />
         <div className="absolute bottom-0 left-0 px-6 pb-4">
           <button

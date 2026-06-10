@@ -48,6 +48,9 @@ def lambda_handler(event, context):
     return _resp(404, {"error": "Not Found"})
 
 
+STALE_THRESHOLD_HOURS = 25  # スケジューラーが25時間以上フェッチしていなければ陳腐化とみなす
+
+
 def get_prices(card_name_en: str):
     prices_table = dynamodb.Table(PRICES_TABLE)
     cards_table = dynamodb.Table(CARDS_TABLE)
@@ -56,13 +59,29 @@ def get_prices(card_name_en: str):
     card_resp = cards_table.get_item(Key={"card_name_en": card_name_en})
     card = card_resp.get("Item")
 
+    now = datetime.now(timezone.utc)
+
+    # 閲覧日時を記録（スケジューラーのフィルタリングに使用）
+    if card:
+        cards_table.update_item(
+            Key={"card_name_en": card_name_en},
+            UpdateExpression="SET last_viewed_at = :now",
+            ExpressionAttributeValues={":now": now.isoformat()},
+        )
+
     prices_resp = prices_table.query(
         KeyConditionExpression=Key("card_name_en").eq(card_name_en)
     )
     items = prices_resp.get("Items", [])
 
-    # lazyモード: キャッシュがなければ即時fetch
-    if not items and card and card.get("cache_mode") == "lazy":
+    # オンデマンドフェッチ: キャッシュなし、または価格データが陳腐化している場合
+    needs_fetch = not items
+    if not needs_fetch and card:
+        last_fetched = card.get("last_fetched_at", "1970-01-01T00:00:00+00:00")
+        age_hours = (now - datetime.fromisoformat(last_fetched)).total_seconds() / 3600
+        needs_fetch = age_hours > STALE_THRESHOLD_HOURS
+
+    if needs_fetch:
         lambda_client.invoke(
             FunctionName=FETCHER_FUNCTION_NAME,
             InvocationType="RequestResponse",
