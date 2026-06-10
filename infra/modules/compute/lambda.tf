@@ -85,6 +85,7 @@ resource "aws_lambda_function" "api" {
       DYNAMODB_CARDS_TABLE  = var.cards_table_name
       DYNAMODB_PRICES_TABLE = var.prices_table_name
       FETCHER_FUNCTION_NAME = aws_lambda_function.fetcher.function_name
+      ADMIN_API_KEY         = var.admin_api_key
     }
   }
 

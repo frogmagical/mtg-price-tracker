@@ -73,6 +73,14 @@ Recommended implementation:
   - `fetch_status`
   - `fetch_error_count`
 
+Implemented local/admin script:
+
+- `scripts/import_scryfall_cards.py`
+- Supports local `.json` / `.json.gz` bulk files or `--download`.
+- Groups by `oracle_id`, keeps the newest paper `released_at`, calculates
+  `scheduled` / `lazy`, and upserts to `mtg-cards`.
+- Use `--dry-run` and `--limit` before full import.
+
 Open questions:
 
 - Whether Japanese names should come from Scryfall printed names or another source.
@@ -106,9 +114,8 @@ Note:
 
 ## Backend Tasks
 
-- Implement Scryfall Bulk Data import Lambda or local/admin script.
-- Add idempotent upsert for `mtg-cards`.
-- Recalculate `cache_mode` during master import.
+- Consider whether Scryfall Bulk Data import should remain a local/admin script
+  or become a Lambda/admin API later.
 - Add manual command/runbook for master import.
 - Re-test scheduled path:
   - Insert scheduled card.
@@ -172,6 +179,47 @@ Note:
   - push notifications, or
   - local watchlist.
 - Design watchlist and price-change notification flow.
+
+## Product Idea: Watchlist Polling And Notifications
+
+Idea stage only. Consider adding a feature where users can register watch
+conditions for a specific card, then receive a notification when matching
+listings appear.
+
+Possible conditions:
+
+- maximum price
+- shop
+- language
+- condition
+- foil / non-foil
+- minimum stock
+
+Initial realistic path:
+
+- Start with notifications based on the existing cached Wisdom Guild results.
+- Evaluate matching conditions after each scheduled fetch or lazy fetch.
+- Deduplicate notifications so the same listing does not repeatedly notify the
+  same user.
+- This pairs well with the planned native push notification feature for mobile.
+
+Direct shop polling is a later option, not the MVP default:
+
+- Do not crawl shop search pages or discover products by card name unless
+  permission and technical feasibility are confirmed.
+- If implemented, prefer user-registered product URLs or explicitly supported
+  shop adapters.
+- Poll per unique target URL, not per user, so many users watching the same item
+  still result in one fetch.
+- Use conservative intervals and per-shop rate limits.
+- Confirm terms, robots.txt, and operational risk for each supported shop.
+
+Possible future tables:
+
+- `watchlists`: user conditions for a card.
+- `watch_targets`: source target such as Wisdom Guild card page or direct shop
+  product URL.
+- `price_alert_events`: notification history and deduplication records.
 
 ## Useful Commands
 

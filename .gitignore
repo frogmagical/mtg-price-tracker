@@ -1,8 +1,12 @@
 .terraform/
 *.tfstate
 *.tfstate.*
+secrets.tfvars
+*.secrets.tfvars
 
 node_modules/
 dist/
 __pycache__/
 *.pyc
+.env.local
+.env.*.local

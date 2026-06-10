@@ -5,10 +5,17 @@ import { fetchCards, type CardMeta } from '../api'
 export default function CardSearchPage() {
   const [cards, setCards] = useState<CardMeta[]>([])
   const [query, setQuery] = useState('')
+  const [error, setError] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetchCards().then(setCards).catch(console.error)
+    setError('')
+    fetchCards()
+      .then(setCards)
+      .catch((err) => {
+        console.error(err)
+        setError('カード情報の取得に失敗しました。')
+      })
   }, [])
 
   const filtered = cards.filter(
@@ -27,19 +34,25 @@ export default function CardSearchPage() {
         onChange={(e) => setQuery(e.target.value)}
         style={{ width: '100%', padding: 8, fontSize: 16, marginBottom: 16, boxSizing: 'border-box' }}
       />
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {filtered.map((c) => (
-          <li
-            key={c.card_name_en}
-            onClick={() => navigate(`/prices/${encodeURIComponent(c.card_name_en)}`)}
-            style={{ padding: '12px 0', borderBottom: '1px solid #eee', cursor: 'pointer' }}
-          >
-            <span style={{ fontWeight: 'bold' }}>{c.card_name_ja || c.card_name_en}</span>
-            <span style={{ color: '#888', marginLeft: 8, fontSize: 12 }}>{c.card_name_en}</span>
-            <span style={{ color: '#aaa', marginLeft: 8, fontSize: 11 }}>{c.latest_set_code}</span>
-          </li>
-        ))}
-      </ul>
+      {error ? (
+        <p style={{ color: '#b00020' }}>{error}</p>
+      ) : cards.length === 0 && query === '' ? (
+        <p>カードが登録されていません。</p>
+      ) : (
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {filtered.map((c) => (
+            <li
+              key={c.card_name_en}
+              onClick={() => navigate(`/prices/${encodeURIComponent(c.card_name_en)}`)}
+              style={{ padding: '12px 0', borderBottom: '1px solid #eee', cursor: 'pointer' }}
+            >
+              <span style={{ fontWeight: 'bold' }}>{c.card_name_ja || c.card_name_en}</span>
+              <span style={{ color: '#888', marginLeft: 8, fontSize: 12 }}>{c.card_name_en}</span>
+              <span style={{ color: '#aaa', marginLeft: 8, fontSize: 11 }}>{c.latest_set_code}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

@@ -16,8 +16,16 @@ BASE_URL = "https://wonder.wisdom-guild.net/price/{}/"
 
 def lambda_handler(event, context):
     for record in event["Records"]:
-        body = json.loads(record["body"])
-        process_card(body["card_name_en"])
+        try:
+            body = json.loads(record["body"])
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f"Invalid SQS record body: {e}")
+            continue
+        card_name = body.get("card_name_en")
+        if not card_name:
+            print(f"Missing card_name_en in record body")
+            continue
+        process_card(card_name)
 
 
 def process_card(card_name_en: str):

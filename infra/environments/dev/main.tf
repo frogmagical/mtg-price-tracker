@@ -38,6 +38,7 @@ module "compute" {
   prices_table_arn       = module.storage.prices_table_arn
   fetch_queue_url        = module.storage.fetch_queue_url
   fetch_queue_arn        = module.storage.fetch_queue_arn
+  admin_api_key          = var.admin_api_key
 }
 
 module "frontend_hosting" {

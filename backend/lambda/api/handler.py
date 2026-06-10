@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import boto3
 from datetime import datetime, timedelta, timezone
@@ -11,6 +12,19 @@ lambda_client = boto3.client("lambda")
 CARDS_TABLE = os.environ["DYNAMODB_CARDS_TABLE"]
 PRICES_TABLE = os.environ["DYNAMODB_PRICES_TABLE"]
 FETCHER_FUNCTION_NAME = os.environ["FETCHER_FUNCTION_NAME"]
+ADMIN_API_KEY = os.environ.get("ADMIN_API_KEY", "")
+
+_CARD_NAME_RE = re.compile(r"^[A-Za-z0-9 '+\-,:/!.éàüöä]{1,200}$")
+
+
+def _is_valid_card_name(name: str) -> bool:
+    return bool(name and _CARD_NAME_RE.match(name))
+
+
+def _check_admin(event) -> bool:
+    headers = event.get("headers") or {}
+    provided = headers.get("x-admin-key") or headers.get("X-Admin-Key", "")
+    return ADMIN_API_KEY and provided == ADMIN_API_KEY
 
 
 def lambda_handler(event, context):
@@ -23,9 +37,13 @@ def lambda_handler(event, context):
     if method == "GET" and path == "/cards":
         return get_cards()
     if method == "POST" and path == "/cards":
+        if not _check_admin(event):
+            return _resp(401, {"error": "Unauthorized"})
         body = json.loads(event.get("body") or "{}")
         return post_card(body)
     if method == "DELETE" and path.startswith("/cards/"):
+        if not _check_admin(event):
+            return _resp(401, {"error": "Unauthorized"})
         return delete_card(params["cardNameEn"])
     return _resp(404, {"error": "Not Found"})
 
@@ -101,6 +119,8 @@ def post_card(body: dict):
     card_name_en = body.get("card_name_en")
     if not card_name_en:
         return _resp(400, {"error": "card_name_en is required"})
+    if not _is_valid_card_name(card_name_en):
+        return _resp(400, {"error": "card_name_en contains invalid characters or exceeds 200 chars"})
 
     latest_set_date = body.get("latest_set_date", "2000-01-01")
     cutoff = datetime.now(timezone.utc) - timedelta(days=365 * 10)

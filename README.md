@@ -92,7 +92,27 @@ aws cloudfront create-invalidation --distribution-id <distribution_id> --paths '
 
 定時取得は `mtg-cards` に登録済み、かつ `cache_mode = scheduled` のカードだけを対象にします。
 
-そのため、`mtg-cards` が空の場合は EventBridge Scheduler が動いても取得対象は0件です。今後、Scryfall Bulk Data からカードマスタを作成する処理を実装予定です。
+そのため、`mtg-cards` が空の場合は EventBridge Scheduler が動いても取得対象は0件です。
+
+Scryfall Bulk Data からカードマスタを投入するには、まずdry-runで内容を確認します。
+
+```bash
+cd /home/tokium/Git/MyProject/mtg-price-tracker
+python3 scripts/import_scryfall_cards.py --download --dry-run
+```
+
+dev環境へ少数カードだけ投入して確認する場合:
+
+```bash
+python3 scripts/import_scryfall_cards.py \
+  --download \
+  --limit 100 \
+  --table-name mtg-cards \
+  --profile myenv \
+  --region ap-northeast-1
+```
+
+全件投入する場合は `--limit` を外します。既存カードは `card_name_en` をキーにupsertされます。
 
 ## Destroy
 

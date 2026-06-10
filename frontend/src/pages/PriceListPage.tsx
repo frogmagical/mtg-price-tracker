@@ -6,14 +6,19 @@ export default function PriceListPage() {
   const { cardNameEn } = useParams<{ cardNameEn: string }>()
   const [prices, setPrices] = useState<PriceItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
     if (!cardNameEn) return
     setLoading(true)
+    setError('')
     fetchPrices(cardNameEn)
       .then(setPrices)
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err)
+        setError('価格情報の取得に失敗しました。')
+      })
       .finally(() => setLoading(false))
   }, [cardNameEn])
 
@@ -29,6 +34,8 @@ export default function PriceListPage() {
       </h2>
       {loading ? (
         <p>読み込み中...</p>
+      ) : error ? (
+        <p style={{ color: '#b00020' }}>{error}</p>
       ) : availablePrices.length === 0 ? (
         <p>在庫ありの価格情報が見つかりませんでした。</p>
       ) : (

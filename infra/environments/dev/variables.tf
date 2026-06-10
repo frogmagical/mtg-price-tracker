@@ -13,3 +13,9 @@ variable "env" {
 variable "project_name" {
   default = "mtg-price-tracker"
 }
+
+variable "admin_api_key" {
+  type      = string
+  sensitive = true
+  description = "Admin API key for write endpoints"
+}

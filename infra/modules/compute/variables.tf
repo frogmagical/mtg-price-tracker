@@ -37,3 +37,9 @@ variable "fetch_queue_url" {
 variable "fetch_queue_arn" {
   type = string
 }
+
+variable "admin_api_key" {
+  type      = string
+  sensitive = true
+  description = "Admin API key for write endpoints (POST /cards, DELETE /cards)"
+}
